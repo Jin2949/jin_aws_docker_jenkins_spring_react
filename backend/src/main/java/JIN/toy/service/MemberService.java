@@ -6,6 +6,8 @@ import JIN.toy.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -15,6 +17,9 @@ public class MemberService {
     public void save(MemberDTO memberDTO) {
         MemberEntity memberEntity = MemberEntity.toMemberEntity(memberDTO);
         memberRepository.save(memberEntity);
+    }
 
+    public List<MemberEntity> findAll() {
+        return memberRepository.findAll();
     }
 }

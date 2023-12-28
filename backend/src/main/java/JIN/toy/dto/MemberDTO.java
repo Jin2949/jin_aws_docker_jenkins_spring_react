@@ -25,7 +25,6 @@ public class MemberDTO { //회원 정보를 필드로 정의
         memberDTO.setMemberEmail(memberEntity.getMemberEmail());
         memberDTO.setMemberName(memberEntity.getMemberName());
         memberDTO.setMemberPassword(memberEntity.getMemberPassword());
-
         return memberDTO;
     }
 }
