@@ -176,3 +176,117 @@
 
 도커 한번에 올리고 jenkins로 자동배포까지 서버에 올리기까지 도전
 
+```dockerfile
+#docker-compose.yml 아래와 같이 세팅
+version: '3'
+
+services:
+  database:
+    container_name: mysql_db
+    image: mysql/mysql-server:5.7
+    environment:
+      MYSQL_DATABASE: users_db
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: 1234
+      TZ: 'Asia/Seoul'
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./mysql/conf.d:/etc/mysql/conf.d # MySQL 설정 파일 위치
+    command:
+      - "mysqld"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    networks:
+      - test_network
+
+  application:
+    container_name: docker-compose-test
+    restart: on-failure
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db:3306/users_db?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "1234"
+    depends_on:
+      - database
+    networks:
+      - test_network
+
+  frontend:
+    build: ./frontend
+    # 연결할 외부 디렉토리 : 컨테이너 내 디렉토리
+    volumes:
+      - ./frontend:/home/node/app
+    ports:
+      - "3000:3000"
+
+
+networks:
+  test_network:
+```
+
+위 내용들 github에 push
+
+ec2 열기
+
+```bash
+#ubuntu 명령어
+1. 관리자 권한 부여
+sudo su -
+2. Docker 설치 및 관련 스크립트 입력
+# 업데이트
+sudo apt-get update -y
+
+# HTTP 패키지 설치
+sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common -y
+
+# gpg 키 및 저장소 추가
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository --yes \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+
+# Docker 엔진 설치
+sudo apt-get install docker-ce docker-ce-cli containerd.io -y
+
+# 설치 확인
+docker -v
+
+# git에서 파일 받아와서 도커로 실행
+docker compose up -d
+```
+
+프리티어의 경우 npm 설치하다가 램초과되어서 멈춤.
+
+```bash
+# 아래 명령어를 통해 이 부족한 부분을 디스크의 일부를 대신 사용하도록 설정해줌 으로써 해결하는 방법이다. 이를 메모리 스왑으로 해결
+sudo dd if=/dev/zero of=/mnt/swapfile bs=1M count=2048
+sudo mkswap /mnt/swapfile
+sudo swapon /mnt/swapfile
+# 이렇게 해주면 스왑 메모리가 2GB 잡혀서 메모리 부족으로 빌드가 멈추는 현상은 사라짐. 디스크는 RAM 보다 훨씬 속도가 느리기 때문에 서비스에 퍼포먼스 문제가 발생할 수 있다고 한다. 그래서 이 방법은 임시방편으로 쓰고 사양을 올려야 한다.
+```
+
+git에서 가져온 파일을 docker container만 다시 올리면 되는줄 알았으나, docker 컨테이너와 이미지를 다 없애고 다시 compose up을 실행해야 git에서 가져온 파일로 실행됨. 변경이 되지 않는다.
+
+```bash
+docker rm -f $(docker ps -qa)
+#아래 명령어를 통해 image확인 후 삭제
+docker images
+docker rmi mysql/mysql-server:5.7
+```
+
+
+
+
+
