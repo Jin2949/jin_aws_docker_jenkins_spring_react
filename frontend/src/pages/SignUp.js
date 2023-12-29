@@ -26,7 +26,7 @@ const SignUp = () => {
   
   const singupUser = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/api/signup',
+      const response = await axios.post('http://43.201.78.190:8080/api/signup',
         {
           "memberEmail": email,
           "memberPassword": name,
