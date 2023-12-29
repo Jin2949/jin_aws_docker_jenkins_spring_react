@@ -7,9 +7,10 @@ const Home = () => {
   const [hello, setHello] = useState('')
 
   useEffect(() => {
-    axios.get('http://123:8080/api/hello')
-      .then(response => setHello(response.data))
-      .catch(error => console.log(error))
+    console.log("123456");
+    // axios.get('http://123:8080/api/hello')
+    //   .then(response => setHello(response.data))
+    //   .catch(error => console.log(error))
   }, []);
 
   return (
