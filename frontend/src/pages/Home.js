@@ -7,7 +7,7 @@ const Home = () => {
   const [hello, setHello] = useState('')
 
   useEffect(() => {
-    axios.get('http://43.201.78.190:8080/api/hello')
+    axios.get('http://123:8080/api/hello')
       .then(response => setHello(response.data))
       .catch(error => console.log(error))
   }, []);
