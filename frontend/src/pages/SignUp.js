@@ -26,7 +26,7 @@ const SignUp = () => {
   
   const singupUser = async () => {
     try {
-      const response = await axios.post('/api/signup',
+      const response = await axios.post('http://localhost:8080/api/signup',
         {
           "memberEmail": email,
           "memberPassword": name,
@@ -39,7 +39,7 @@ const SignUp = () => {
         })
         .then((response) => {
           window.alert('회원가입완료');
-          console.log(response);
+          console.log(response)
       })
     } catch (e) {
       console.log(e);
