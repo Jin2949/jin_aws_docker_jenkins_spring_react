@@ -20,7 +20,7 @@ public class MemberController {
 
     @GetMapping("/api/hello")
     public String test() {
-        return "Hello, world!";
+        return "Hello, world!입니다.";
     }
 
     @GetMapping("/api/members")

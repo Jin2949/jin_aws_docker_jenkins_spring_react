@@ -291,5 +291,105 @@ docker rmi $(docker images -q)
 
 
 
+## 2024/01/01
+
+AWS ec2에서 도커 설치하고, 도커에 젠킨스 올리고 젠킨스에서 github action으로 git push시에 자동으로 배포될 수 있도록 설정
+
+```bash
+#도커 설치
+sudo apt-get update
+sudo apt-get install docker.io
+sudo service docker start
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
+docker pull jenkins/jenkins
+
+# ec2에서 젠킨스 폴더 생성
+sudo mkdir /home/opendocs/jenkins
+
+# 젠킨스안에서도 도커 접근이 가능하도록 -v설정을 해준다.
+sudo docker run \
+--name jenkins \
+-d \
+-p 8081:8080 \
+-p 50000:50000 \
+-v /home/opendocs/jenkins:/var/jenkins_home \
+-v /var/run/docker.sock:/var/run/docker.sock \
+-u root \
+jenkins/jenkins:lts
+
+#젠킨스 접속해서 비밀번호 가져오기
+docker exec -it jenkins /bin/bash
+cat /var/jenkins_home/secrets/initialAdminPassword
+
+# 젠킨스 접속해서
+apt-get remove docker docker-engine docker.io containerd runc
+apt-get update
+apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release	
+
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get update
+apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+sudo dd if=/dev/zero of=/swapfile bs=128M count=16
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+sudo swapon -s
+sudo vi /etc/fstab
+# 파일 가장 마지막에 다음을 추가하고 :wq로 저장하고 종료
+/swapfile swap swap defaults 0 0
+free
+```
+
+github hook 설정
+
+```bash
+# webhooks 설정
+# payload URL
+http://13.125.206.131:8081/github-webhook/
+
+# ec2 포트개방 git 관련
+    "192.30.252.0/22",
+    "185.199.108.0/22",
+    "140.82.112.0/20",
+    "143.55.64.0/20",
+    "2a0a:a440::/29",
+    "2606:50c0::/32"
+```
+
+jenkins Execute shell
+
+```bash
+# 소스 코드 관리에서 git repository url 걸고 credentials에 username/password로 하고 password는 깃토큰으로 넣어주면 접근가능 branch이름 설정
+# 빌드유발은 GitHub hook trigger for GITScm polling
+# push하게 되면 백엔드 빌드를 다시하고 도커에서 컨테이너와 이미지를 지우고 다시 올린다.
+# Build Steps
+cd backend/
+chmod +x gradlew
+./gradlew clean build
+cd ..
+
+docker container stop etet-frontend-1
+docker rm etet-frontend-1
+docker rmi etet-frontend
+docker container stop docker-compose-test
+docker rm docker-compose-test
+docker rmi etet-application
+
+docker compose up -d
+```
+
+
+
 
 
