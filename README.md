@@ -284,6 +284,9 @@ docker rm -f $(docker ps -qa)
 #아래 명령어를 통해 image확인 후 삭제
 docker images
 docker rmi mysql/mysql-server:5.7
+
+docker rm -f $(docker ps -qa)
+docker rmi $(docker images -q)
 ```
 
 

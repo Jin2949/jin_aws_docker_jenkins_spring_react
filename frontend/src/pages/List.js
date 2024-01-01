@@ -19,7 +19,7 @@ const UserList = () => {
 
   const getUser = async () => {
     try {
-      const response = await axios.get('http://43.201.78.190:8080/api/members');
+      const response = await axios.get('http://13.125.206.131:8080/api/members');
       const Info = response.data.map((user) => {
         return {
           email: user.memberEmail,

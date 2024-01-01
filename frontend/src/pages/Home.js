@@ -7,14 +7,14 @@ const Home = () => {
   const [hello, setHello] = useState('')
 
   useEffect(() => {
-    axios.get('http://43.201.78.190:8080/api/hello')
+    axios.get('http://13.125.206.131:8080/api/hello')
       .then(response => setHello(response.data))
       .catch(error => console.log(error))
   }, []);
 
   return (
     <div>
-        백엔드에서 가져온 데이터입니다 : {hello}
+        백엔드에서 가져온 데이터 : {hello}
     </div>
   );
 }
